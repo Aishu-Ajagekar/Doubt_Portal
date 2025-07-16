@@ -4,9 +4,11 @@ import "../../public/css/Login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import socket from "../utils/socket";
+import { useSocket } from "../context/SocketContext";
 
 function LoginCard({ theme }) {
+  const socket = useSocket();
+  
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 

@@ -36,36 +36,72 @@ app.get("/", (req, res) => {
 });
 
 // ========== SOCKET.IO ==========
+/*
+const  connecteusers = {
+  "userId-1234": {
+    role: "mentor/student",
+    sockets: []
+  } 
+}
+*/
 const connectedUsers = {}; // socket.id -> mentorId
 const rooms = {}; // socket.id -> studentId
 const pendingRequests = {}; // mentorId -> [{ studentId, studentName }]
+const getUserSocket = (userId) => {
+  console.log(connectedUsers)
+  return connectedUsers[userId]?.sockets || []
+}
 
 io.on("connection", (socket) => {
   console.log("🔌 New socket connected:", socket.id);
   socket.on("connect-user", ({ user_id, role }) => {
-    connectedUsers[user_id] = {
-      socketId: socket.id,
-      role,
-    };
+    
+    if(!connectedUsers[user_id]){
+      connectedUsers[user_id] = {
+        id: user_id,
+        role,
+        sockets: []
+      };
+    }
+
+    connectedUsers[user_id].sockets.push(socket.id)
+    
     console.log("🟢 User online:", connectedUsers);
   });
 
-  socket.on("remove-user", ({userId}) => {
+  socket.on("remove-user", ({ userId }) => {
     // Find the user by socket ID and remove
     delete connectedUsers[userId]
     console.log("🧹 User Disconnected : ", userId);
     console.log("User list : ", connectedUsers)
   });
 
-  socket.on("send-request",({mentorId, studentId})=>{
+  socket.on("send-request", ({ mentorId, studentId, courseName, topicId }) => {
     const roomId = uuidv4()
-      console.log(`Request Coming from : ${studentId} to Mentor : ${mentorId} RoomId : ${roomId}`)
-      rooms[roomId] = {
-        studentId,
-        mentorId, 
-        roomId,
-        status: "pending"
+    const requestDetails = {
+      roomId,
+      studentId,
+      mentorId,
+      courseName,
+      topicId,
+      status: "pending"
+    }
+
+    console.log("Request Details : ", requestDetails);
+
+    const mentorSocket = getUserSocket(mentorId)
+    const studentSocket = getUserSocket(studentId);
+
+    console.log("sending request to mentor socket : ", mentorSocket);
+    if(mentorSocket.length > 0) {
+      for(let userSocket of mentorSocket){
+        io.to(userSocket).emit("incoming-request",{ studentId, roomId,  });
       }
+    }
+    
+    rooms[roomId] = requestDetails;
+
+    console.log(rooms)
   })
 });
 

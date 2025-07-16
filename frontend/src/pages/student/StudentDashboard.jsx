@@ -38,7 +38,8 @@ const StudentDashboard = () => {
 
   const handleTopicClick = (topic) => {
     setTopicId(topic.id);
-    navigate("/mentor/mentor-list");
+    console.log(`Topic ID : ${topic.id} and course is ${selectedCourse}`)
+    navigate("/mentor/mentor-list", {state: {courseName : selectedCourse, selectedTopic: topic}});
   };
 
   return (

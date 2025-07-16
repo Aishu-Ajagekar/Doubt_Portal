@@ -1,13 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaCircle, FaUserTie } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import Swal from "sweetalert2";
+import { useSocket } from "../../context/SocketContext"
 
 const MentorList = () => {
+  const socket = useSocket();
+  
   const [mentors, setMentors] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { courseName = [], selectedTopic = []} = location.state || {};
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -36,12 +42,16 @@ const MentorList = () => {
   };
 
   const handleChatNow = (selectedMentorId) => {
-    
+    const studentId = sessionStorage.getItem("userId");
+
+    socket.emit("send-request", {mentorId : selectedMentorId, studentId, courseName, topicId : selectedTopic.id})
   };
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">👨‍🏫 Mentor List</h2>
+      <h4>Course Name : {courseName}</h4>
+      <h5>Topic Name : {selectedTopic.name}</h5>
+      <h6 className="text-center mb-4">👨‍🏫 Mentor List</h6>
       <div className="row">
         {mentors.length > 0 ? (
           mentors.map((mentor) => (

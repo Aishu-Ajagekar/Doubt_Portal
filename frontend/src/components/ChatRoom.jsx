@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import socket from "../utils/socket"; // your socket instance
+import { useSocket } from "../context/SocketContext"; // your socket instance
 
 const ChatRoom = () => {
+  const socket = useSocket();
   const { roomId: topicId } = useParams();
   const data = useParams();
   const [chat, setChat] = useState([]);

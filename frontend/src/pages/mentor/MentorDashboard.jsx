@@ -3,12 +3,17 @@
 import React, { useEffect } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import socket from "../../utils/socket"; // ✅ shared instance
+import { useSocket } from '../../context/SocketContext' // ✅ shared instance
 
 const MentorDashboard = () => {
+  const socket = useSocket();
   // const navigate = useNavigate();
 
- 
+  useEffect(() => {
+    socket.on("incoming-request", ({studentId, roomId})=>{
+      console.log(`Incoming Request from student : ${studentId} and room ID : ${roomId}`)
+    })
+  }, [])
 
   return (
     <div className="container mt-5">
