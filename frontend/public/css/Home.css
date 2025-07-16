@@ -1,0 +1,49 @@
+/* Layout */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.home-container {
+  flex-grow: 1;
+  background: linear-gradient(to right, #141e30, #243b55);
+  color: #fff;
+  padding: 60px 20px;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 40px 20px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #ddd;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* Features */
+.feature-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.feature-box:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Footer */
+.site-footer {
+  width: 100%;
+}
