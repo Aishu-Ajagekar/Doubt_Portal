@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start" : "node server.js",
-    "dev" : "nodemon serrver.js"
+    "start": "node server.js",
+    "dev": "nodemon serrver.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

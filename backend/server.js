@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const { v4: uuidv4 } = require('uuid');
 const http = require("http");
 const { Server } = require("socket.io");
+
 const dbConnect = require("./config/db");
 
 dotenv.config();
@@ -38,17 +40,6 @@ const connectedUsers = {}; // socket.id -> mentorId
 const rooms = {}; // socket.id -> studentId
 const pendingRequests = {}; // mentorId -> [{ studentId, studentName }]
 
-
-/*
-{
-    "roomId-123": {
-        roomId: "roomId-123"
-        studentId: "1",
-        topicId: "mern123",
-        mentorId: ""
-    }
-}
-*/
 io.on("connection", (socket) => {
   console.log("🔌 New socket connected:", socket.id);
   socket.on("connect-user", ({ user_id, role }) => {
@@ -66,7 +57,16 @@ io.on("connection", (socket) => {
     console.log("User list : ", connectedUsers)
   });
 
-
+  socket.on("send-request",({mentorId, studentId})=>{
+    const roomId = uuidv4()
+      console.log(`Request Coming from : ${studentId} to Mentor : ${mentorId} RoomId : ${roomId}`)
+      rooms[roomId] = {
+        studentId,
+        mentorId, 
+        roomId,
+        status: "pending"
+      }
+  })
 });
 
 // 🚀 Start server
