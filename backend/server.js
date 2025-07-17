@@ -5,7 +5,10 @@ const { v4: uuidv4 } = require('uuid');
 const http = require("http");
 const { Server } = require("socket.io");
 
+const topicList = require('./data/topicData.json');
+
 const dbConnect = require("./config/db");
+const User = require("./models/User");
 
 dotenv.config();
 dbConnect();
@@ -76,7 +79,7 @@ io.on("connection", (socket) => {
     console.log("User list : ", connectedUsers)
   });
 
-  socket.on("send-request", ({ mentorId, studentId, courseName, topicId }) => {
+  socket.on("send-request", async ({ mentorId, studentId, courseName, topicId }) => {
     const roomId = uuidv4()
     const requestDetails = {
       roomId,
@@ -84,18 +87,23 @@ io.on("connection", (socket) => {
       mentorId,
       courseName,
       topicId,
-      status: "pending"
+      status: "pending",
+      requestedAt : new Date().toISOString()
     }
 
     console.log("Request Details : ", requestDetails);
 
     const mentorSocket = getUserSocket(mentorId)
-    const studentSocket = getUserSocket(studentId);
+    // const studentSocket = getUserSocket(studentId);
 
+    const topic = topicList[courseName].find(ele => ele.id === topicId)
+
+    const studentName = await User.findById(studentId).select("name")
+    console.log(studentName)
     console.log("sending request to mentor socket : ", mentorSocket);
     if(mentorSocket.length > 0) {
       for(let userSocket of mentorSocket){
-        io.to(userSocket).emit("incoming-request",{ studentId, roomId,  });
+        io.to(userSocket).emit("incoming-request",{ StudentName: studentName.name, studentId, roomId, requestedAt:  requestDetails.requestedAt, TopicName : topic.name});
       }
     }
     
