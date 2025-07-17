@@ -12,11 +12,14 @@ const MentorDashboard = () => {
   useEffect(() => {
 
     if (!socket) return;
-
+  
     const handleIncomingRequest = (newRequest) => {
       setRequests((prevRequests) => [...prevRequests, newRequest]);
     };
 
+    socket.on("previous-requets", (prevRequests)=> {
+      console.log(prevRequests)
+    })
     socket.on("incoming-request", handleIncomingRequest)
 
     return () => {
