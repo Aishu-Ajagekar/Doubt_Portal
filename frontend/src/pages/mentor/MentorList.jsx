@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaCircle, FaUserTie } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+// import { io, Socket } from "socket.io-client";
 import Swal from "sweetalert2";
+import socket from '../../utils/socket';
 
 const MentorList = () => {
   const [mentors, setMentors] = useState([]);
@@ -36,7 +37,8 @@ const MentorList = () => {
   };
 
   const handleChatNow = (selectedMentorId) => {
-    
+    const studentId = sessionStorage.getItem('userId')
+    socket.emit("send-request", {mentorId: selectedMentorId, studentId})
   };
 
   return (

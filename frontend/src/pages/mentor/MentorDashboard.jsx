@@ -6,10 +6,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../../utils/socket"; // ✅ shared instance
 
 const MentorDashboard = () => {
-  // const navigate = useNavigate();
-
- 
-
+  
   return (
     <div className="container mt-5">
       <h2 className="text-center text-primary">👨‍🏫 Mentor Dashboard</h2>
