@@ -1,36 +1,41 @@
-
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSocket } from '../../context/SocketContext' // ✅ shared instance
+import { useSocket } from "../../context/SocketContext"; // ✅ shared instance
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
 const MentorDashboard = () => {
   const socket = useSocket();
-  const [requests, setRequests] = useState([])
+  const [requests, setRequests] = useState([]);
+  const navigate = useNavigate();
+
+  const acceptRequest = (roomId) => {
+    socket.emit("accept-request", {
+      roomId,
+      userId: sessionStorage.getItem("userId"),
+    });
+  };
 
   useEffect(() => {
-
     if (!socket) return;
-  
+
     const handleIncomingRequest = (newRequest) => {
       setRequests((prevRequests) => [...prevRequests, newRequest]);
     };
 
-    socket.on("previous-requets", (prevRequests)=> {
-      console.log(prevRequests)
-    })
-    socket.on("incoming-request", handleIncomingRequest)
+    socket.on("previous-requets", (prevRequests) => {
+      console.log(prevRequests);
+    });
+    socket.on("incoming-request", handleIncomingRequest);
 
-    socket.on("join-room", ({roomId})=>{
-      
+    socket.on("request-accepted", ({ roomId }) => {
+      console.log(`Redirecting to Room : ${roomId}`);
+      navigate(`/chat/${roomId}`);
     });
 
     return () => {
       socket.off("incoming-request", handleIncomingRequest);
     };
-
-  }, [])
+  }, []);
 
   return (
     <div className="container mt-5">
@@ -40,7 +45,7 @@ const MentorDashboard = () => {
       </p>
       <strong>Incoming Request</strong>
 
-      {requests.map(req => (
+      {requests.map((req) => (
         <div
           key={`${req.roomId}-${req.studentId}`}
           className="flex justify-between items-center p-4 bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-200 border border-gray-100"
@@ -61,18 +66,17 @@ const MentorDashboard = () => {
           {/* Right Side - Buttons */}
           <div className="flex gap-3 ml-4">
             <button
-              className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-xl shadow hover:bg-green-600 transition" style={{backgroundColor: "green", marginRight: "10px"}}
-              onClick={() => {
-                socket.emit("request-accepted", {roomId: req.roomId, userId: sessionStorage.getItem("userId")})
-              }}
+              className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-xl shadow hover:bg-green-600 transition"
+              style={{ backgroundColor: "green", marginRight: "10px" }}
+              onClick={() => acceptRequest(req.roomId)}
             >
               <CheckCircle className="w-4 h-4" /> Accept
             </button>
 
             <button
               className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-red-500 text-white rounded-xl shadow hover:bg-red-600 transition"
-              style={{backgroundColor: "red"}}
-              onClick={() => { }}
+              style={{ backgroundColor: "red" }}
+              onClick={() => {}}
             >
               <XCircle className="w-4 h-4" /> Decline
             </button>

@@ -143,23 +143,43 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("request-accepted", ({ userId, roomId }) => {
-    socket.join(roomId);
+  socket.on("accept-request", ({ userId, roomId }) => {
     rooms[roomId].status = "active";
     console.log(
       `User : ${socket.userId} joined room.\n Role : ${connectedUsers[userId].role}`
     );
-    // const requestedRoom = rooms[roomId];
-    // if(requestedRoom.mentorId === userId && connectedUsers[userId].role === "mentor"){
-    //   const studentSockets = connectedUsers[requestedRoom.studentId];
-    //   const mentorSockets = connectedUsers[requestedRoom.mentorId];
-    //   for(let socket of studentSockets){
-    //     io.to(socket).emit("join-room", {roomId})
-    //   }
-    //   for(let socket of mentorSockets){
-    //     io.to(socket).emit("join-room", {roomId})
-    //   }
-    // }
+    const requestedRoom = rooms[roomId];
+    if (
+      requestedRoom.mentorId === userId &&
+      connectedUsers[userId].role === "mentor"
+    ) {
+      const studentSockets = connectedUsers[requestedRoom.studentId].sockets;
+      const mentorSockets = connectedUsers[requestedRoom.mentorId].sockets;
+      for (let socket of studentSockets) {
+        io.to(socket).emit("request-accepted", { roomId });
+      }
+      for (let socket of mentorSockets) {
+        io.to(socket).emit("request-accepted", { roomId });
+      }
+    }
+  });
+
+  socket.on("join-room", ({ roomId }) => {
+    if (rooms[roomId]) {
+      socket.join(roomId);
+    }
+  });
+  /*
+  {
+    "message": "message",
+    "timestamp": ISOString,
+    "roomId": "roomId",
+    "userId": "userId"
+  }
+  */
+  socket.on("send-message", ({ roomId, message }) => {
+    console.log(`Message from room : ${roomId}\nMessage : ${message}\nFrom User : ${socket.userId}\n`)
+    io.to(roomId).emit("receive-message", {message});
   });
 });
 

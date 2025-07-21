@@ -5,7 +5,7 @@ import { useSocket } from "../context/SocketContext"; // your socket instance
 
 const ChatRoom = () => {
   const socket = useSocket();
-  const { roomId: topicId } = useParams();
+  const { roomId } = useParams();
   const data = useParams();
   const [chat, setChat] = useState([]);
   const [msg, setMsg] = useState("");
@@ -19,59 +19,61 @@ const ChatRoom = () => {
 
   // Scroll to bottom on new message
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chat]);
+    // if (chatEndRef.current) {
+    //   chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // }
+    socket.emit("join-room", { roomId });
+  }, [roomId]);
 
   useEffect(() => {
-    if (!topicId) return;
-    socket.emit("join-room", topicId);
+    if (!roomId) return;
+    // socket.emit("join-room", );
 
-    const fetchMessages = async () => {
-      try {
-        console.log("Topic Id while fething messages", topicId);
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/v1/messages`,
-          {
-            params: {
-              topicId,
-            },
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-        setChat(res.data.messages);
-        setTopicName(res.data.topicName);
-      } catch (err) {
-        console.error("❌ Error fetching messages:", err);
-      }
-    };
-    fetchMessages();
+    // const fetchMessages = async () => {
+    //   try {
+    //     console.log("Topic Id while fething messages", topicId);
+    //     const res = await axios.get(
+    //       `${import.meta.env.VITE_API_URL}/api/v1/messages`,
+    //       {
+    //         params: {
+    //           topicId,
+    //         },
+    //         headers: {
+    //           Authorization: token,
+    //         },
+    //       }
+    //     );
+    //     setChat(res.data.messages);
+    //     setTopicName(res.data.topicName);
+    //   } catch (err) {
+    //     console.error("❌ Error fetching messages:", err);
+    //   }
+    // };
+    // fetchMessages();
 
-    socket.on("receive-message", (data) => {
-      setChat((prev) => [...prev, data]);
+    socket.on("receive-message", ({ message }) => {
+      console.log(message);
+      // setChat((prev) => [...prev, data]);
     });
 
-    socket.on("typing", ({ senderName }) => {
-      console.log("👀 Mentor received typing from:", senderName);
-      setIsTyping(senderName);
-      setTimeout(() => setIsTyping(null), 2000);
-    });
+    // socket.on("typing", ({ senderName }) => {
+    //   console.log("👀 Mentor received typing from:", senderName);
+    //   setIsTyping(senderName);
+    //   setTimeout(() => setIsTyping(null), 2000);
+    // });
 
     return () => {
-      socket.emit("leave-room", topicId);
+      // socket.emit("leave-room", topicId);
       socket.off("receive-message");
       socket.off("typing");
     };
-  }, [topicId]);
+  }, [roomId]);
 
   const handleTyping = () => {
-    socket.emit("typing", {
-      room: topicId,
-      senderName,
-    });
+    // socket.emit("typing", {
+    //   room: topicId,
+    //   senderName,
+    // });
   };
 
   const handleChange = (e) => {
@@ -83,7 +85,7 @@ const ChatRoom = () => {
     console.log("send message topic id", data);
     if (!msg.trim()) return;
     socket.emit("send-message", {
-      roomId: data.topicId,
+      roomId,
       message: msg,
       senderName,
       senderRole,
@@ -93,7 +95,7 @@ const ChatRoom = () => {
 
   return (
     <div className="container mt-4">
-      <h4 className="mb-3">🔗 Chat Room - {topicId}</h4>
+      <h4 className="mb-3">🔗 Chat Room - {roomId}</h4>
 
       <div
         className="border rounded p-3 mb-3"

@@ -4,16 +4,16 @@ import { FaCircle, FaUserTie } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import Swal from "sweetalert2";
-import { useSocket } from "../../context/SocketContext"
+import { useSocket } from "../../context/SocketContext";
 
 const MentorList = () => {
   const socket = useSocket();
-  
+
   const [mentors, setMentors] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { courseName = [], selectedTopic = []} = location.state || {};
+  const { courseName = [], selectedTopic = [] } = location.state || {};
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -33,11 +33,13 @@ const MentorList = () => {
         Swal.fire("Error", "Failed to load mentor list", "error");
       }
     };
-    
-    socket.on("join-room", ({roomId})=>{
-      
-    });
+
     fetchMentors();
+
+    socket.on("request-accepted", ({ roomId }) => {
+      console.log(`Redirecting to Room : ${roomId}`);
+      navigate(`/chat/${roomId}`);
+    });
   }, []);
 
   const handleViewProfile = (mentorId) => {
@@ -47,7 +49,12 @@ const MentorList = () => {
   const handleChatNow = (selectedMentorId) => {
     const studentId = sessionStorage.getItem("userId");
 
-    socket.emit("send-request", {mentorId : selectedMentorId, studentId, courseName, topicId : selectedTopic.id})
+    socket.emit("send-request", {
+      mentorId: selectedMentorId,
+      studentId,
+      courseName,
+      topicId: selectedTopic.id,
+    });
   };
 
   return (
