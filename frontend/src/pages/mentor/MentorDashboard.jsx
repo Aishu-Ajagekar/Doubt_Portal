@@ -22,6 +22,10 @@ const MentorDashboard = () => {
     })
     socket.on("incoming-request", handleIncomingRequest)
 
+    socket.on("join-room", ({roomId})=>{
+      
+    });
+
     return () => {
       socket.off("incoming-request", handleIncomingRequest);
     };
@@ -58,7 +62,9 @@ const MentorDashboard = () => {
           <div className="flex gap-3 ml-4">
             <button
               className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-xl shadow hover:bg-green-600 transition" style={{backgroundColor: "green", marginRight: "10px"}}
-              onClick={() => {}}
+              onClick={() => {
+                socket.emit("request-accepted", {roomId: req.roomId, userId: sessionStorage.getItem("userId")})
+              }}
             >
               <CheckCircle className="w-4 h-4" /> Accept
             </button>

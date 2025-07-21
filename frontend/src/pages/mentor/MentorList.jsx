@@ -33,7 +33,10 @@ const MentorList = () => {
         Swal.fire("Error", "Failed to load mentor list", "error");
       }
     };
-
+    
+    socket.on("join-room", ({roomId})=>{
+      
+    });
     fetchMentors();
   }, []);
 
