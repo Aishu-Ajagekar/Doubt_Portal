@@ -179,7 +179,13 @@ io.on("connection", (socket) => {
   */
   socket.on("send-message", ({ roomId, message }) => {
     console.log(`Message from room : ${roomId}\nMessage : ${message}\nFrom User : ${socket.userId}\n`)
-    io.to(roomId).emit("receive-message", {message});
+    const messageData = {
+      message,
+      "time": new Date().toISOString(),
+      roomId,
+      userId: socket.userId
+    }
+    io.to(roomId).emit("receive-message", messageData);
   });
 });
 
