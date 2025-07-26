@@ -183,7 +183,7 @@ io.on("connection", (socket) => {
   }
   */
   socket.on("send-message", (message) => {
-    console.log(`Message from room : ${message.roomId}\nMessage : ${message.message}\nFrom User : ${socket.userId}\n`)
+    console.log(`Message from room : ${message.roomId}\nMessage : ${message.content}\nFrom User : ${socket.userId}\n`)
     
     io.to(message.roomId).emit("receive-message", message);
   });

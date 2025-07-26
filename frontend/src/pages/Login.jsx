@@ -32,7 +32,7 @@ function LoginCard({ theme }) {
       sessionStorage.setItem("name", user.name);
 
       socket.emit("connect-user", { user_id: user.id, role: user.role });
-
+      
       Swal.fire("Success", "Login successful!", "success");
 
       // Redirect based on role
