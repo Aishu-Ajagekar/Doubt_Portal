@@ -56,7 +56,7 @@ const getUserSocket = (userId) => {
 
 io.on("connection", (socket) => {
   console.log("🔌 New socket connected:", socket.id);
-  socket.on("connect-user", ({ user_id, role }) => {
+  socket.on("connect-user", async ({ user_id, role }) => {
     if (!connectedUsers[user_id]) {
       connectedUsers[user_id] = {
         id: user_id,
@@ -70,15 +70,19 @@ io.on("connection", (socket) => {
     console.log("🟢 User online:", connectedUsers);
 
     if (role === "mentor") {
-      const requestsArray = Object.values(rooms)
+      const filteredArray = Object.values(rooms)
         .filter((req) => req.mentorId === user_id && req.status === "pending")
-        .map(async (req) => {
-          const studentName = await User.findById(req.studentId).select("name")
-            .name;
+      const mappedRequests = await Promise.all(
+        filteredArray.map(async (req) => {
+          const studentName = (await User.findById(req.studentId)).name;
 
-          const topic = Object.values(topicList).find(
-            (ele) => ele.id === req.topicId
-          );
+          console.log(req.studentId, studentName, "student id")
+
+          const topic = Object.values(topicList)
+            .flat(Infinity)
+            .find(
+              (ele) => ele.id === req.topicId
+            );
 
           return {
             StudentName: studentName,
@@ -87,11 +91,12 @@ io.on("connection", (socket) => {
             requestedAt: req.requestedAt,
             TopicName: topic.name,
           };
-        });
+        })
+      );
       const mentorSocket = connectedUsers[user_id].sockets;
-
+      console.log(mappedRequests)
       for (let socket of mentorSocket) {
-        io.to(socket).emit("previous-requets", requestsArray);
+        io.to(socket).emit("previous-requets", mappedRequests);
       }
     }
 

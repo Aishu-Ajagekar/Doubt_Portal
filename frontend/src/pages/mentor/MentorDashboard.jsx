@@ -23,7 +23,7 @@ const MentorDashboard = () => {
     };
 
     socket.on("previous-requets", (prevRequests) => {
-      console.log(prevRequests);
+      setRequests(prevRequests)
     });
     socket.on("incoming-request", handleIncomingRequest);
 
