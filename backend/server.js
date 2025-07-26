@@ -182,15 +182,10 @@ io.on("connection", (socket) => {
     "userId": "userId"
   }
   */
-  socket.on("send-message", ({ roomId, message }) => {
-    console.log(`Message from room : ${roomId}\nMessage : ${message}\nFrom User : ${socket.userId}\n`)
-    const messageData = {
-      message,
-      "time": new Date().toISOString(),
-      roomId,
-      userId: socket.userId
-    }
-    io.to(roomId).emit("receive-message", messageData);
+  socket.on("send-message", (message) => {
+    console.log(`Message from room : ${message.roomId}\nMessage : ${message.message}\nFrom User : ${socket.userId}\n`)
+    
+    io.to(message.roomId).emit("receive-message", message);
   });
 });
 

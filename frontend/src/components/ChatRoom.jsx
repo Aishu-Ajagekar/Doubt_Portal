@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 import { useSocket } from "../context/SocketContext"; // your socket instance
 
 const ChatRoom = () => {
@@ -51,9 +51,9 @@ const ChatRoom = () => {
     // };
     // fetchMessages();
 
-    socket.on("receive-message", ({ message }) => {
+    socket.on("receive-message", (message) => {
       console.log(message);
-      // setChat((prev) => [...prev, data]);
+      setChat((prev) => [...prev, message]);
     });
 
     // socket.on("typing", ({ senderName }) => {
@@ -67,7 +67,7 @@ const ChatRoom = () => {
       socket.off("receive-message");
       socket.off("typing");
     };
-  }, [roomId]);
+  }, []);
 
   const handleTyping = () => {
     // socket.emit("typing", {
@@ -82,16 +82,25 @@ const ChatRoom = () => {
   };
 
   const sendMessage = () => {
-    console.log("send message topic id", data);
     if (!msg.trim()) return;
-    socket.emit("send-message", {
-      roomId,
-      message: msg,
+  
+    const newMsg = {
+      content: msg,
+      time: new Date().toISOString(),
       senderName,
       senderRole,
-    });
+      roomId
+    };
+  
+    // Add to UI immediately
+    // setChat((prev) => [...prev, newMsg]);
+  
+    // Send to server
+    socket.emit("send-message", newMsg);
+  
     setMsg("");
   };
+  
 
   return (
     <div className="container mt-4">
