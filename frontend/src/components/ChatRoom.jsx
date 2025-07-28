@@ -10,12 +10,15 @@ const ChatRoom = () => {
   const [chat, setChat] = useState([]);
   const [msg, setMsg] = useState("");
   const [topicName, setTopicName] = useState("");
+  const [file, setFile] = useState(null);
   const [isTyping, setIsTyping] = useState(null);
   const chatEndRef = useRef(null);
 
   const senderName = sessionStorage.getItem("name");
   const senderRole = sessionStorage.getItem("role");
   const token = sessionStorage.getItem("token");
+  const [fileReady, setFileReady] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(false);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -70,10 +73,22 @@ const ChatRoom = () => {
   }, []);
 
   const handleTyping = () => {
-    // socket.emit("typing", {
-    //   room: topicId,
-    //   senderName,
-    // });
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit("typing", {
+        roomId,
+        senderName,
+      });
+    }
+
+    // Clear previous timeout
+    if (window.typingTimeout) clearTimeout(window.typingTimeout);
+
+    // Set new timeout for stop-typing
+    window.typingTimeout = setTimeout(() => {
+      socket.emit("stop-typing", { roomId });
+      setIsTyping(false);
+    }, 1000); // 1 second
   };
 
   const handleChange = (e) => {
@@ -81,26 +96,49 @@ const ChatRoom = () => {
     handleTyping();
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+    setIsFileLoading(true)
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setFile({
+        name: selectedFile.name,
+        type: selectedFile.type,
+        data: reader.result, // this is the base64 string
+      });
+
+      setFileReady(true);
+      setIsFileLoading(false)
+    };
+
+    reader.readAsDataURL(selectedFile); // start reading
+  };
+
   const sendMessage = () => {
-    if (!msg.trim()) return;
-  
+    if (!msg.trim() && (!file || !fileReady)) return;
+
     const newMsg = {
       content: msg,
       time: new Date().toISOString(),
       senderName,
       senderRole,
-      roomId
+      roomId,
+      attachment: fileReady ? file : null,
     };
-  
+
     // Add to UI immediately
     // setChat((prev) => [...prev, newMsg]);
-  
+
     // Send to server
+    console.log("File State : ", fileReady);
     socket.emit("send-message", newMsg);
-  
+
     setMsg("");
+    setFile(null);
+    setFileReady(false);
   };
-  
 
   return (
     <div className="container mt-4">
@@ -130,6 +168,27 @@ const ChatRoom = () => {
                   {m.senderName} ({m.senderRole})
                 </div>
                 <div>{m.content}</div>
+                {m.attachment && (
+                  <div>
+                    {m.attachment.type.startsWith("image/") ? (
+                      <img
+                        src={m.attachment.data}
+                        alt={m.attachment.name}
+                        style={{ maxWidth: "200px", display: "block" }}
+                      />
+                    ) : (
+                      <a
+                        href={m.attachment.data}
+                        download={m.attachment.name}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-sm btn-outline-secondary mt-1"
+                      >
+                        {m.attachment.name}
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -158,6 +217,10 @@ const ChatRoom = () => {
           onChange={handleChange}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
+        <input type="file" onChange={handleFileChange} />
+        {isFileLoading && (
+  <span className="ms-2 text-primary small">Loading file...</span>
+)}
         <button className="btn btn-primary" onClick={sendMessage}>
           Send
         </button>

@@ -170,9 +170,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join-room", ({ roomId }) => {
-    if (rooms[roomId]) {
       socket.join(roomId);
-    }
   });
   /*
   {
@@ -183,10 +181,19 @@ io.on("connection", (socket) => {
   }
   */
   socket.on("send-message", (message) => {
-    console.log(`Message from room : ${message.roomId}\nMessage : ${message.content}\nFrom User : ${socket.userId}\n`)
+    console.log(`Message from room : ${message.roomId}\nFrom User : ${socket.userId}\nMessage: ${message.content}`)
     
     io.to(message.roomId).emit("receive-message", message);
   });
+
+  // Typing status
+    socket.on("typing", ({ roomId, senderName }) => {
+      socket.to(roomId).emit("show-typing", { senderName });
+    });
+
+    socket.on("stop-typing", ({ roomId }) => {
+      socket.to(roomId).emit("hide-typing");
+    });
 });
 
 // 🚀 Start server
