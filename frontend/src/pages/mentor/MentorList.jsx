@@ -42,20 +42,49 @@ const MentorList = () => {
     });
   }, []);
 
-  const handleViewProfile = (mentorId) => {
-    navigate(`/mentor-profile/${mentorId}`);
-  };
+  
 
-  const handleChatNow = (selectedMentorId) => {
-    const studentId = sessionStorage.getItem("userId");
+ const handleChatNow = (selectedMentorId, req) => {
+  const studentId = sessionStorage.getItem("userId");
 
-    socket.emit("send-request", {
-      mentorId: selectedMentorId,
-      studentId,
-      courseName,
-      topicId: selectedTopic.id,
-    });
-  };
+  if (!studentId) {
+    console.error("❌ studentId is undefined");
+    Swal.fire("Error", "Student is not logged in!", "error");
+    return;
+  }
+
+  console.log("✅ Sending request with:", {
+    mentorId: selectedMentorId,
+    studentId,
+    courseName,
+    topicId: selectedTopic.id,
+  });
+
+  socket.emit("send-request", {
+    mentorId: selectedMentorId,
+    studentId,
+    courseName,
+    topicId: selectedTopic.id,
+  });
+
+  Swal.fire({
+    title: "Request Sent!",
+    text: "Your doubt request has been sent to the mentor.",
+    icon: "success",
+    confirmButtonText: "Go to Chat",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // navigate only if req and req.roomId is defined
+      if (req && req.roomId) {
+        navigate(`/chat/${req.roomId}`);
+      } else {
+        Swal.fire("Error", "Room ID not found", "error");
+      }
+    }
+  });
+};
+
+
 
   return (
     <div className="container mt-5">
@@ -93,13 +122,8 @@ const MentorList = () => {
                       </span>
                     )}
                   </p>
-                  <div className="d-flex justify-content-between">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => handleViewProfile(mentor._id)}
-                    >
-                      View Profile
-                    </button>
+                  <div className="d-flex justify-content-end">
+                    
                     <button
                       className="btn btn-success btn-sm"
                       onClick={() => handleChatNow(mentor._id)}

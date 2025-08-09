@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaLock, FaUser } from "react-icons/fa";
 import "../../public/css/Login.css";
 import axios from "axios";
@@ -7,8 +7,16 @@ import Swal from "sweetalert2";
 import { useSocket } from "../context/SocketContext";
 
 function LoginCard({ theme }) {
+  useEffect(() => {
+    const isUserLoggedIn = sessionStorage.getItem("token");
+    if (isUserLoggedIn) {
+      sessionStorage.getItem("role") === "student"
+        ? window.location.replace("/student-dashboard")
+        : window.location.replace("/mentor");
+    }
+  }, []);
   const socket = useSocket();
-  
+
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 
@@ -32,7 +40,7 @@ function LoginCard({ theme }) {
       sessionStorage.setItem("name", user.name);
 
       socket.emit("connect-user", { user_id: user.id, role: user.role });
-      
+
       Swal.fire("Success", "Login successful!", "success");
 
       // Redirect based on role

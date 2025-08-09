@@ -8,15 +8,18 @@ import { BrowserRouter } from 'react-router-dom';
 import { TopicProvider } from './context/TopicContent.jsx';
 import { MentorProvider } from './context/MentorContext.jsx';
 import { SocketProvider } from './context/SocketContext.jsx';
+import { HistoryProvider } from './context/HistoryContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    <SocketProvider>
+    <HistoryProvider>
+      <SocketProvider>
       <TopicProvider>
         <MentorProvider>
           <App />
         </MentorProvider>
       </TopicProvider>
     </SocketProvider>
+    </HistoryProvider>
   </BrowserRouter>,
 )

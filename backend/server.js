@@ -150,9 +150,18 @@ io.on("connection", (socket) => {
 
   socket.on("accept-request", ({ userId, roomId }) => {
     rooms[roomId].status = "active";
-    console.log(
-      `User : ${socket.userId} joined room.\n Role : ${connectedUsers[userId].role}`
-    );
+    // console.log(
+    //   `User : ${socket.userId} joined room.\n Role : ${connectedUsers[userId].role}`
+    // );
+   
+if (!connectedUsers[userId] || !connectedUsers[userId].role) {
+  console.warn(`⚠️ User ${userId} not found in connectedUsers.`);
+} else {
+  console.log(
+    `User : ${userId} joined room.\n Role : ${connectedUsers[userId].role}`
+  );
+}
+
     const requestedRoom = rooms[roomId];
     if (
       requestedRoom.mentorId === userId &&
@@ -194,6 +203,12 @@ io.on("connection", (socket) => {
     socket.on("stop-typing", ({ roomId }) => {
       socket.to(roomId).emit("hide-typing");
     });
+
+    socket.on("message-read", ({ roomId, readerName }) => {
+  // Notify others in the room (except the reader)
+  socket.to(roomId).emit("message-read-confirmation", { readerName });
+});
+
 });
 
 // 🚀 Start server
