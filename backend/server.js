@@ -70,19 +70,18 @@ io.on("connection", (socket) => {
     console.log("🟢 User online:", connectedUsers);
 
     if (role === "mentor") {
-      const filteredArray = Object.values(rooms)
-        .filter((req) => req.mentorId === user_id && req.status === "pending")
+      const filteredArray = Object.values(rooms).filter(
+        (req) => req.mentorId === user_id && req.status === "pending"
+      );
       const mappedRequests = await Promise.all(
         filteredArray.map(async (req) => {
           const studentName = (await User.findById(req.studentId)).name;
 
-          console.log(req.studentId, studentName, "student id")
+          console.log(req.studentId, studentName, "student id");
 
           const topic = Object.values(topicList)
             .flat(Infinity)
-            .find(
-              (ele) => ele.id === req.topicId
-            );
+            .find((ele) => ele.id === req.topicId);
 
           return {
             StudentName: studentName,
@@ -94,7 +93,7 @@ io.on("connection", (socket) => {
         })
       );
       const mentorSocket = connectedUsers[user_id].sockets;
-      console.log(mappedRequests)
+      console.log(mappedRequests);
       for (let socket of mentorSocket) {
         io.to(socket).emit("previous-requets", mappedRequests);
       }
@@ -153,14 +152,14 @@ io.on("connection", (socket) => {
     // console.log(
     //   `User : ${socket.userId} joined room.\n Role : ${connectedUsers[userId].role}`
     // );
-   
-if (!connectedUsers[userId] || !connectedUsers[userId].role) {
-  console.warn(`⚠️ User ${userId} not found in connectedUsers.`);
-} else {
-  console.log(
-    `User : ${userId} joined room.\n Role : ${connectedUsers[userId].role}`
-  );
-}
+
+    if (!connectedUsers[userId] || !connectedUsers[userId].role) {
+      console.warn(`⚠️ User ${userId} not found in connectedUsers.`);
+    } else {
+      console.log(
+        `User : ${userId} joined room.\n Role : ${connectedUsers[userId].role}`
+      );
+    }
 
     const requestedRoom = rooms[roomId];
     if (
@@ -179,7 +178,7 @@ if (!connectedUsers[userId] || !connectedUsers[userId].role) {
   });
 
   socket.on("join-room", ({ roomId }) => {
-      socket.join(roomId);
+    socket.join(roomId);
   });
   /*
   {
@@ -190,25 +189,26 @@ if (!connectedUsers[userId] || !connectedUsers[userId].role) {
   }
   */
   socket.on("send-message", (message) => {
-    console.log(`Message from room : ${message.roomId}\nFrom User : ${socket.userId}\nMessage: ${message.content}`)
-    
+    console.log(
+      `Message from room : ${message.roomId}\nFrom User : ${socket.userId}\nMessage: ${message.content}`
+    );
+
     io.to(message.roomId).emit("receive-message", message);
   });
 
   // Typing status
-    socket.on("typing", ({ roomId, senderName }) => {
-      socket.to(roomId).emit("show-typing", { senderName });
-    });
+  socket.on("typing", ({ roomId, senderName }) => {
+    socket.to(roomId).emit("show-typing", { senderName });
+  });
 
-    socket.on("stop-typing", ({ roomId }) => {
-      socket.to(roomId).emit("hide-typing");
-    });
+  socket.on("stop-typing", ({ roomId }) => {
+    socket.to(roomId).emit("hide-typing");
+  });
 
-    socket.on("message-read", ({ roomId, readerName }) => {
-  // Notify others in the room (except the reader)
-  socket.to(roomId).emit("message-read-confirmation", { readerName });
-});
-
+  socket.on("message-read", ({ roomId, readerName }) => {
+    // Notify others in the room (except the reader)
+    socket.to(roomId).emit("message-read-confirmation", { readerName });
+  });
 });
 
 // 🚀 Start server

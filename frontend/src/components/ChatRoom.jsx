@@ -192,7 +192,7 @@ const ChatRoom = () => {
       navigate(-stepsBack);
     } else {
       // If not found, fallback
-      navigate("/dashboard", { replace: true });
+      navigate("/student-dashboard", { replace: true });
     }
 
     // if (userRole === "student") {

@@ -15,6 +15,7 @@ const MentorDashboard = () => {
       studentId,
       studentName,
       topic,
+      userId: sessionStorage.getItem("userId"),
     });
   };
 
