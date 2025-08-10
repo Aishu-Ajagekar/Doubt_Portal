@@ -1,12 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaLock, FaUser } from "react-icons/fa";
 import "../../public/css/Login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import socket from "../utils/socket";
+import { useSocket } from "../context/SocketContext";
 
 function LoginCard({ theme }) {
+  useEffect(() => {
+    const isUserLoggedIn = sessionStorage.getItem("token");
+    if (isUserLoggedIn) {
+      sessionStorage.getItem("role") === "student"
+        ? window.location.replace("/student-dashboard")
+        : window.location.replace("/mentor");
+    }
+  }, []);
+  const socket = useSocket();
+
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 

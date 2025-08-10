@@ -41,8 +41,7 @@ function App() {
           /> */}
           <Route path="/mentor" element={<MentorDashboard theme={theme} />} />
           <Route path="/mentor/mentor-list" element={<MentorList />} />
-          <Route path="/chat/:topicId" element={<ChatRoom />} />
-          <Route path="/chat/:topicId" element={<ChatRoom />} />
+          <Route path="/chat/:roomId" element={<ChatRoom />} />
           {/* <Route
           path="/student"
           element={

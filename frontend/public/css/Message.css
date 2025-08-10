@@ -1,0 +1,16 @@
+.message-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  max-width: 70%;
+  margin-bottom: 8px;
+}
+
+.sent {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+}
+
+.received {
+  background-color: #f1f0f0;
+  align-self: flex-start;
+}

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import socket from "../utils/socket";
+import { useSocket } from "../context/SocketContext";
 
 function Navbar({ theme, setTheme }) {
+  const socket = useSocket();
   const navigate = useNavigate();
   const token = sessionStorage.getItem("token");
   const role = sessionStorage.getItem("role");

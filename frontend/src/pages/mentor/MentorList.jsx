@@ -1,14 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaCircle, FaUserTie } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-// import { io, Socket } from "socket.io-client";
+import { useNavigate, useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 import Swal from "sweetalert2";
-import socket from '../../utils/socket';
+import { useSocket } from "../../context/SocketContext";
 
 const MentorList = () => {
+  const socket = useSocket();
+
   const [mentors, setMentors] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { courseName = [], selectedTopic = [] } = location.state || {};
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -30,20 +35,49 @@ const MentorList = () => {
     };
 
     fetchMentors();
+
+    socket.on("request-accepted", ({ roomId }) => {
+      console.log(`Redirecting to Room : ${roomId}`);
+      navigate(`/chat/${roomId}`);
+    });
   }, []);
 
-  const handleViewProfile = (mentorId) => {
-    navigate(`/mentor-profile/${mentorId}`);
-  };
+  const handleChatNow = (selectedMentorId, req) => {
+    const studentId = sessionStorage.getItem("userId");
 
-  const handleChatNow = (selectedMentorId) => {
-    const studentId = sessionStorage.getItem('userId')
-    socket.emit("send-request", {mentorId: selectedMentorId, studentId})
+    if (!studentId) {
+      console.error("❌ studentId is undefined");
+      Swal.fire("Error", "Student is not logged in!", "error");
+      return;
+    }
+
+    console.log("✅ Sending request with:", {
+      mentorId: selectedMentorId,
+      studentId,
+      courseName,
+      topicId: selectedTopic.id,
+    });
+
+    socket.emit("send-request", {
+      mentorId: selectedMentorId,
+      studentId,
+      courseName,
+      topicId: selectedTopic.id,
+    });
+
+    Swal.fire({
+      title: "Request Sent!",
+      text: "Your doubt request has been sent to the mentor.",
+      icon: "success",
+      confirmButtonText: "OK",
+    })
   };
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">👨‍🏫 Mentor List</h2>
+      <h4>Course Name : {courseName}</h4>
+      <h5>Topic Name : {selectedTopic.name}</h5>
+      <h6 className="text-center mb-4">👨‍🏫 Mentor List</h6>
       <div className="row">
         {mentors.length > 0 ? (
           mentors.map((mentor) => (
@@ -75,13 +109,7 @@ const MentorList = () => {
                       </span>
                     )}
                   </p>
-                  <div className="d-flex justify-content-between">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => handleViewProfile(mentor._id)}
-                    >
-                      View Profile
-                    </button>
+                  <div className="d-flex justify-content-end">
                     <button
                       className="btn btn-success btn-sm"
                       onClick={() => handleChatNow(mentor._id)}

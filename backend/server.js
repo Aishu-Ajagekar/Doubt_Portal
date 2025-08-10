@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const http = require("http");
 const { Server } = require("socket.io");
 
+const topicList = require("./data/topicData.json");
+
 const dbConnect = require("./config/db");
+const User = require("./models/User");
 
 dotenv.config();
 dbConnect();
@@ -36,37 +39,176 @@ app.get("/", (req, res) => {
 });
 
 // ========== SOCKET.IO ==========
+/*
+const  connecteusers = {
+  "userId-1234": {
+    role: "mentor/student",
+    sockets: []
+  } 
+}
+*/
 const connectedUsers = {}; // socket.id -> mentorId
 const rooms = {}; // socket.id -> studentId
 const pendingRequests = {}; // mentorId -> [{ studentId, studentName }]
+const getUserSocket = (userId) => {
+  return connectedUsers[userId]?.sockets || [];
+};
 
 io.on("connection", (socket) => {
   console.log("🔌 New socket connected:", socket.id);
-  socket.on("connect-user", ({ user_id, role }) => {
-    connectedUsers[user_id] = {
-      socketId: socket.id,
-      role,
-    };
+  socket.on("connect-user", async ({ user_id, role }) => {
+    if (!connectedUsers[user_id]) {
+      connectedUsers[user_id] = {
+        id: user_id,
+        role,
+        sockets: [],
+      };
+    }
+
+    connectedUsers[user_id].sockets.push(socket.id);
+
     console.log("🟢 User online:", connectedUsers);
-  });
 
-  socket.on("remove-user", ({userId}) => {
-    // Find the user by socket ID and remove
-    delete connectedUsers[userId]
-    console.log("🧹 User Disconnected : ", userId);
-    console.log("User list : ", connectedUsers)
-  });
+    if (role === "mentor") {
+      const filteredArray = Object.values(rooms).filter(
+        (req) => req.mentorId === user_id && req.status === "pending"
+      );
+      const mappedRequests = await Promise.all(
+        filteredArray.map(async (req) => {
+          const studentName = (await User.findById(req.studentId)).name;
 
-  socket.on("send-request",({mentorId, studentId})=>{
-    const roomId = uuidv4()
-      console.log(`Request Coming from : ${studentId} to Mentor : ${mentorId} RoomId : ${roomId}`)
-      rooms[roomId] = {
-        studentId,
-        mentorId, 
-        roomId,
-        status: "pending"
+          console.log(req.studentId, studentName, "student id");
+
+          const topic = Object.values(topicList)
+            .flat(Infinity)
+            .find((ele) => ele.id === req.topicId);
+
+          return {
+            StudentName: studentName,
+            studentId: req.studentId,
+            roomId: req.roomId,
+            requestedAt: req.requestedAt,
+            TopicName: topic.name,
+          };
+        })
+      );
+      const mentorSocket = connectedUsers[user_id].sockets;
+      console.log(mappedRequests);
+      for (let socket of mentorSocket) {
+        io.to(socket).emit("previous-requets", mappedRequests);
       }
-  })
+    }
+
+    socket.userId = user_id;
+  });
+
+  socket.on("remove-user", ({ userId }) => {
+    // Find the user by socket ID and remove
+    delete connectedUsers[userId];
+    console.log("🧹 User Disconnected : ", userId);
+  });
+
+  socket.on(
+    "send-request",
+    async ({ mentorId, studentId, courseName, topicId }) => {
+      const roomId = uuidv4();
+      const requestDetails = {
+        roomId,
+        studentId,
+        mentorId,
+        courseName,
+        topicId,
+        status: "pending",
+        requestedAt: new Date().toISOString(),
+      };
+
+      console.log("Request Details : ", requestDetails);
+
+      const mentorSocket = getUserSocket(mentorId);
+      // const studentSocket = getUserSocket(studentId);
+
+      const topic = topicList[courseName].find((ele) => ele.id === topicId);
+
+      const studentName = await User.findById(studentId).select("name");
+
+      if (mentorSocket.length > 0) {
+        for (let userSocket of mentorSocket) {
+          io.to(userSocket).emit("incoming-request", {
+            StudentName: studentName.name,
+            studentId,
+            roomId,
+            requestedAt: requestDetails.requestedAt,
+            TopicName: topic.name,
+          });
+        }
+      }
+
+      rooms[roomId] = requestDetails;
+    }
+  );
+
+  socket.on("accept-request", ({ userId, roomId }) => {
+    rooms[roomId].status = "active";
+    // console.log(
+    //   `User : ${socket.userId} joined room.\n Role : ${connectedUsers[userId].role}`
+    // );
+
+    if (!connectedUsers[userId] || !connectedUsers[userId].role) {
+      console.warn(`⚠️ User ${userId} not found in connectedUsers.`);
+    } else {
+      console.log(
+        `User : ${userId} joined room.\n Role : ${connectedUsers[userId].role}`
+      );
+    }
+
+    const requestedRoom = rooms[roomId];
+    if (
+      requestedRoom.mentorId === userId &&
+      connectedUsers[userId].role === "mentor"
+    ) {
+      const studentSockets = connectedUsers[requestedRoom.studentId].sockets;
+      const mentorSockets = connectedUsers[requestedRoom.mentorId].sockets;
+      for (let socket of studentSockets) {
+        io.to(socket).emit("request-accepted", { roomId });
+      }
+      for (let socket of mentorSockets) {
+        io.to(socket).emit("request-accepted", { roomId });
+      }
+    }
+  });
+
+  socket.on("join-room", ({ roomId }) => {
+    socket.join(roomId);
+  });
+  /*
+  {
+    "message": "message",
+    "timestamp": ISOString,
+    "roomId": "roomId",
+    "userId": "userId"
+  }
+  */
+  socket.on("send-message", (message) => {
+    console.log(
+      `Message from room : ${message.roomId}\nFrom User : ${socket.userId}\nMessage: ${message.content}`
+    );
+
+    io.to(message.roomId).emit("receive-message", message);
+  });
+
+  // Typing status
+  socket.on("typing", ({ roomId, senderName }) => {
+    socket.to(roomId).emit("show-typing", { senderName });
+  });
+
+  socket.on("stop-typing", ({ roomId }) => {
+    socket.to(roomId).emit("hide-typing");
+  });
+
+  socket.on("message-read", ({ roomId, readerName }) => {
+    // Notify others in the room (except the reader)
+    socket.to(roomId).emit("message-read-confirmation", { readerName });
+  });
 });
 
 // 🚀 Start server
