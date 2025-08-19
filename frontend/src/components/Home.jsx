@@ -20,7 +20,7 @@ const Home = () => {
           {!isLoggedIn ? (
             <div className="hero-buttons mt-4">
               <Link to="/register" className="btn btn-lg btn-primary me-3">
-                Get Started
+                Register
               </Link>
               <Link to="/login" className="btn btn-lg btn-outline-light">
                 Login
@@ -66,6 +66,8 @@ const Home = () => {
                 <h4>🔔 Smart Notifications</h4>
                 <p>
                   Real-time updates for chat requests, availability & responses.
+                  <br />
+                  <br />
                 </p>
               </div>
             </div>
@@ -73,15 +75,15 @@ const Home = () => {
         </section>
       </main>
       {/* Footer */}
-      <footer className="site-footer bg-dark text-white text-center py-3 mt-auto">
+      <footer className="site-footer bg-dark text-white text-center  py-3 mt-auto">
         <p className="mb-1">
           © {new Date().getFullYear()} DoubtPortal. All rights reserved.
         </p>
         <div className="d-flex justify-content-center gap-3 small">
-          <Link to="/about" className="text-white text-decoration-none">
+          <Link to="/" className="text-white text-decoration-none">
             About
           </Link>
-          <Link to="/contact" className="text-white text-decoration-none">
+          <Link to="/" className="text-white text-decoration-none">
             Contact
           </Link>
           <a

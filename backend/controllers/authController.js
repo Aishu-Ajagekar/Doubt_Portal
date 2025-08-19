@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Register Controller
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role, course } = req.body;
+  const { name, email, password, role } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -19,7 +19,7 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      course,
+      
     });
 
     res.status(201).json({ message: "Registered successfully" });
@@ -52,7 +52,7 @@ exports.loginUser = async (req, res) => {
         name: user.name,
         role: user.role,
         email: user.email,
-        course: user.course,
+       
       },
     });
   } catch (err) {

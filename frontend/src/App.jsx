@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route , useLocation } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 
@@ -16,6 +16,7 @@ function App() {
     sessionStorage.getItem("theme") || "light"
   );
 
+  const location = useLocation();
   useEffect(() => {
     document.body.className = theme === "dark" ? "dark-mode" : "light-mode";
     sessionStorage.setItem("theme", theme);
@@ -26,7 +27,9 @@ function App() {
   return (
     <div className="d-flex flex-column min-vh-100">
       {/* <Router> */}
-      <Navbar theme={theme} setTheme={setTheme} />
+      {location.pathname !== "/" && (
+        <Navbar theme={theme} setTheme={setTheme} />
+      )}
       <main className="flex-grow-1">
         <Routes>
           <Route path="/" element={<Home />} />

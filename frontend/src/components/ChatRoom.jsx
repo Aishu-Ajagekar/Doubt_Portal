@@ -151,6 +151,8 @@ const ChatRoom = () => {
   };
 
   const sendMessage = () => {
+    console.log(msg.trim, file, fileReady)
+
     if (!msg.trim() && (!file || !fileReady)) return;
 
     const newMsg = {

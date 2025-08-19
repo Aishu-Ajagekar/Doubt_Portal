@@ -12,7 +12,7 @@ function Navbar({ theme, setTheme }) {
   const handleLogout = () => {
     // const role = sessionStorage.getItem("role");
     const userId = sessionStorage.getItem("userId");
-    socket.emit("remove-user", {userId});
+    socket.emit("remove-user", { userId });
     // if (role === "mentor") {
     //   const mentorId = sessionStorage.getItem("userId");
     //   if (mentorId) {
@@ -76,7 +76,7 @@ function Navbar({ theme, setTheme }) {
           <li className="nav-item">
             <Link
               className="nav-link text-white fw-semibold"
-              to="/about"
+              to="/"
               onClick={handleLinkClick}
             >
               About
@@ -85,7 +85,7 @@ function Navbar({ theme, setTheme }) {
           <li className="nav-item">
             <Link
               className="nav-link text-white fw-semibold"
-              to="/contact"
+              to="/"
               onClick={handleLinkClick}
             >
               Contact
@@ -95,18 +95,6 @@ function Navbar({ theme, setTheme }) {
 
         {/* Right Side */}
         <ul className="navbar-nav ms-auto gap-3 align-items-center">
-          {/* Theme Toggle */}
-          <li className="nav-item">
-            <button
-              className={`btn btn-sm ${
-                theme === "dark" ? "btn-light" : "btn-dark"
-              }`}
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
-            </button>
-          </li>
-
           {!token && (
             <>
               <li className="nav-item">

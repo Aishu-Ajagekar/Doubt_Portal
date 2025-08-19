@@ -120,25 +120,7 @@ function RegisterCard() {
             </div>
           </div>
 
-          <div className="form-group mb-3">
-            <label>Choose Course</label>
-            <div className="input-group">
-              <span className="input-group-text">
-                <FaBook />
-              </span>
-              <select
-                name="course"
-                className="form-select"
-                onChange={handleChange}
-                required
-              >
-                <option value="">-- Select a course --</option>
-                <option value="python">Python Full Stack</option>
-                <option value="mern">MERN Full Stack</option>
-                <option value="java">Java Full Stack</option>
-              </select>
-            </div>
-          </div>
+          
           <button type="submit" className="btn btn-success w-100 fw-bold">
             Register
           </button>

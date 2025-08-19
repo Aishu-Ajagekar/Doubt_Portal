@@ -5,12 +5,14 @@ const Footer = () => {
   return (
     <footer className="bg-dark text-white text-center py-3 mt-auto">
       <div className="container">
-        <p className="mb-1">© {new Date().getFullYear()} DoubtPortal. All rights reserved.</p>
+        <p className="mb-1">
+          © {new Date().getFullYear()} DoubtPortal. All rights reserved.
+        </p>
         <div className="d-flex justify-content-center gap-3 small">
-          <Link to="/about" className="text-white text-decoration-none">
+          <Link to="/" className="text-white text-decoration-none">
             About
           </Link>
-          <Link to="/contact" className="text-white text-decoration-none">
+          <Link to="/" className="text-white text-decoration-none">
             Contact
           </Link>
           <a

@@ -19,11 +19,7 @@ const userSchema = new mongoose.Schema({
     enum: ["student", "mentor"],
     default: "student",
   },
-  course: {
-    type: String,
-    enum: ["python", "java", "mern"],
-    required: true,
-  },
+  
   status: {
     type: String,
     enum: ["offline", "online", "busy"],
